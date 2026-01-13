@@ -17,7 +17,7 @@ export default function RegisterPage() {
     fullName: "",
     email: "",
     password: "",
-    role: "user",
+    role: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -26,6 +26,14 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Console log the form inputs
+    console.log("Form submitted with data:", form);
+    console.log("Full Name:", form.fullName);
+    console.log("Email:", form.email);
+    console.log("Password:", form.password);
+    console.log("Role:", form.role);
+
     setLoading(true);
     setError("");
 
