@@ -1,55 +1,60 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
-    fullName: "",
     email: "",
     password: "",
-    role: "user",
   });
 
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await fetch("/api/register", {
+  // TanStack Query mutation for Login
+  const loginMutation = useMutation({
+    mutationFn: async (formData: typeof form) => {
+      const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Registration failed");
-      } else {
-        setSuccess(true);
-        setForm({ fullName: "", email: "", password: "", role: "user" });
-        setTimeout(() => setSuccess(false), 3000);
+        throw new Error(data.error || "Login failed");
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      // Navigate based on user role
+      const role = data.user?.role;
+      if (role === "admin") {
+        router.push("/dashboard/admin");
+      } else if (role === "user") {
+        router.push("/dashboard/todos");
+      } else if (role === "manager") {
+        router.push("/dashboard/Manager");
+      } else {
+        router.push("/dashboard/todos");
+      }
+    },
+    onError: (error: Error) => {
+      setError(error.message);
+    },
+  });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    loginMutation.mutate(form);
   }
 
   return (
@@ -67,15 +72,6 @@ export default function LoginPage() {
 
           {/* Form Container */}
           <div className="px-8 py-8">
-            {/* Success Message */}
-            {success && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-700 font-medium">
-                  ✓ User registered successfully!
-                </p>
-              </div>
-            )}
-
             {/* Error Message */}
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -121,13 +117,13 @@ export default function LoginPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loginMutation.isPending}
                 className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg mt-6 transition-all duration-200 disabled:opacity-50"
               >
-                {loading ? "Logging in..." : "Login Account"}
+                {loginMutation.isPending ? "Logging in..." : "Login Account"}
               </Button>
 
-              {/* Login Link */}
+              {/* Register Link */}
               <p className="text-center text-gray-600 text-sm">
                 Don't have an account?{" "}
                 <a
