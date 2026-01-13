@@ -12,11 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export default function LoginPage() {
+export default function AddNewPage() {
   const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    password: "",
+    title: "",
+    description: "",
     role: "user",
   });
 
@@ -42,7 +41,7 @@ export default function LoginPage() {
         setError(data.error || "Registration failed");
       } else {
         setSuccess(true);
-        setForm({ fullName: "", email: "", password: "", role: "user" });
+        setForm({ title: "", description: "", role: "user" });
         setTimeout(() => setSuccess(false), 3000);
       }
     } catch (err) {
@@ -53,16 +52,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-150 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Card Container */}
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-10">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Login Account
-            </h1>
-            <p className="text-blue-100">Sign in to your account</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Add New Todo</h1>
+            <p className="text-blue-100"> </p>
           </div>
 
           {/* Form Container */}
@@ -87,34 +84,37 @@ export default function LoginPage() {
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700 font-medium">
-                  Email Address
+                  Title
                 </Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
+                  id="title"
+                  type="text"
+                  placeholder="Enter todo title"
                   required
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="h-11 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
                 />
               </div>
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700 font-medium">
-                  Password
+                <Label
+                  htmlFor="description"
+                  className="text-gray-700 font-medium"
+                >
+                  Description
                 </Label>
                 <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
+                  id="description"
+                  type="text"
+                  placeholder="Enter todo description"
                   required
-                  value={form.password}
+                  value={form.description}
                   onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
+                    setForm({ ...form, description: e.target.value })
                   }
-                  className="h-11 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg"
+                  className="h-50 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg w-full"
                 />
               </div>
 
@@ -124,26 +124,15 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg mt-6 transition-all duration-200 disabled:opacity-50"
               >
-                {loading ? "Logging in..." : "Login Account"}
+                {loading ? "Adding..." : "Add Todo"}
               </Button>
-
-              {/* Login Link */}
-              <p className="text-center text-gray-600 text-sm">
-                Don't have an account?{" "}
-                <a
-                  href="/auth/register"
-                  className="text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Sign up here
-                </a>
-              </p>
             </form>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-gray-400 text-xs mt-6">
-          By logging in, you agree to our Terms of Service and Privacy Policy
+        <p className="text-center text-black-400 text-xs mt-6">
+          By adding a todo, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
     </div>
