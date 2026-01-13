@@ -1,6 +1,7 @@
-import { db } from './db'
+import { db } from "./db";
 
-db.prepare(`
+db.prepare(
+  `
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     full_name TEXT NOT NULL,
@@ -9,6 +10,7 @@ db.prepare(`
     role TEXT CHECK(role IN ('user','manager','admin')) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )
-`).run()
+`
+).run();
 
-console.log('✅ Tables created')
+console.log("✅ Tables created");
