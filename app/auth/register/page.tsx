@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,44 +21,37 @@ export default function RegisterPage() {
     role: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  // TanStack Query mutation for registration
+  const registerMutation = useMutation({
+    mutationFn: async (formData: typeof form) => {
+      console.log("Form submitted with data:", formData);
+      console.log("Full Name:", formData.fullName);
+      console.log("Email:", formData.email);
+      console.log("Password:", formData.password);
+      console.log("Role:", formData.role);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    // Console log the form inputs
-    console.log("Form submitted with data:", form);
-    console.log("Full Name:", form.fullName);
-    console.log("Email:", form.email);
-    console.log("Password:", form.password);
-    console.log("Role:", form.role);
-
-    setLoading(true);
-    setError("");
-
-    try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Registration failed");
-      } else {
-        setSuccess(true);
-        setForm({ fullName: "", email: "", password: "", role: "user" });
-        setTimeout(() => setSuccess(false), 3000);
+        throw new Error(data.error || "Registration failed");
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+
+      return data;
+    },
+    onSuccess: () => {
+      setForm({ fullName: "", email: "", password: "", role: "" });
+    },
+  });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    registerMutation.mutate(form);
   }
 
   return (
@@ -76,7 +70,7 @@ export default function RegisterPage() {
           {/* Form Container */}
           <div className="px-8 py-8">
             {/* Success Message */}
-            {success && (
+            {registerMutation.isSuccess && (
               <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-green-700 font-medium">
                   ✓ User registered successfully!
@@ -85,9 +79,14 @@ export default function RegisterPage() {
             )}
 
             {/* Error Message */}
-            {error && (
+            {registerMutation.isError && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-700 font-medium">✕ {error}</p>
+                <p className="text-red-700 font-medium">
+                  ✕{" "}
+                  {registerMutation.error instanceof Error
+                    ? registerMutation.error.message
+                    : "Registration failed"}
+                </p>
               </div>
             )}
 
@@ -167,10 +166,12 @@ export default function RegisterPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={registerMutation.isPending}
                 className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg mt-6 transition-all duration-200 disabled:opacity-50"
               >
-                {loading ? "Creating Account..." : "Create Account"}
+                {registerMutation.isPending
+                  ? "Creating Account..."
+                  : "Create Account"}
               </Button>
 
               {/* Login Link */}
