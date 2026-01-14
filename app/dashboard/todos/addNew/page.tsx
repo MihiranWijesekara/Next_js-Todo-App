@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Select,
   SelectContent,
@@ -11,28 +13,106 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import router from "next/router";
 
 export default function AddNewPage() {
+  // TanStack Query for fetching user data
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push("/auth/login");
+        }
+        throw new Error("Failed to fetch user");
+      }
+      const data = await res.json();
+      return data.user;
+    },
+  });
+
   const [form, setForm] = useState({
     title: "",
     description: "",
-    role: "user",
+    status: "draft",
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  // / TanStack Query mutation for registration
+  // const registerMutation = useMutation({
+  //   mutationFn: async (formData: typeof form) => {
+  //     console.log("Form submitted with data:", formData);
+  //     console.log("Full Name:", formData.fullName);
+  //     console.log("Email:", formData.email);
+  //     console.log("Password:", formData.password);
+  //     console.log("Role:", formData.role);
+
+  //     const res = await fetch("/api/register", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(formData),
+  //     });
+
+  //     const data = await res.json();
+
+  //     if (!res.ok) {
+  //       throw new Error(data.error || "Registration failed");
+  //     }
+
+  //     return data;
+  //   },
+  //   onSuccess: () => {
+  //     setForm({ fullName: "", email: "", password: "", role: "" });
+  //   },
+  // });
+
+  const todoAddMutation = useMutation({
+    mutationFn: async (formData: typeof form) => {
+      console.log("Form submitted with data:", formData);
+      const res = await fetch("/api/user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          user_id: user?.id,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Registration failed");
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      setForm({ title: "", description: "", status: "draft" });
+    },
+  });
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    console.log("Form submitted with data:", form);
+    console.log("Title:", form.title);
+    console.log("Description:", form.description);
+    console.log("Status:", form.status);
+    console.log("user ID:", user?.id);
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/register", {
+      const res = await fetch("/api/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          user_id: user?.id,
+        }),
       });
 
       const data = await res.json();
@@ -41,7 +121,7 @@ export default function AddNewPage() {
         setError(data.error || "Registration failed");
       } else {
         setSuccess(true);
-        setForm({ title: "", description: "", role: "user" });
+        setForm({ title: "", description: "", status: "draft" });
         setTimeout(() => setSuccess(false), 3000);
       }
     } catch (err) {
