@@ -37,7 +37,7 @@ export default function LoginPage() {
       // Navigate based on user role
       const role = data.user?.role;
       if (role === "admin") {
-        router.push("/dashboard/admin");
+        router.push("/dashboard/Admin");
       } else if (role === "user") {
         router.push("/dashboard/todos");
       } else if (role === "manager") {

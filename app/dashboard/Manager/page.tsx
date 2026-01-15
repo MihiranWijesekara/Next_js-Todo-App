@@ -38,8 +38,8 @@ import { useQuery } from "@tanstack/react-query";
 
 const statusColors: Record<string, string> = {
   draft: "bg-amber-100 text-amber-700",
-  "In Progress": "bg-blue-100 text-blue-700",
-  Completed: "bg-emerald-100 text-emerald-700",
+  "in-progress": "bg-blue-100 text-blue-700",
+  completed: "bg-emerald-100 text-emerald-700",
 };
 
 export default function TodosPage() {
@@ -149,7 +149,7 @@ export default function TodosPage() {
                       {todo.id}
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-slate-900">
-                      {todo.user}
+                      {todo.full_name}
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-slate-900">
                       {todo.title}
