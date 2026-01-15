@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import React from "react";
 
 const statusColors: Record<string, string> = {
   draft: "bg-amber-100 text-amber-700",
@@ -11,6 +12,10 @@ const statusColors: Record<string, string> = {
 
 function TodosPage() {
   const router = useRouter();
+
+  // State for edit modal and selected todo
+  const [isEditOpen, setIsEditOpen] = React.useState(false);
+  const [selectedTodo, setSelectedTodo] = React.useState<any>(null);
 
   // Fetch current user
   const { data: user, isLoading: userLoading } = useQuery({
@@ -63,6 +68,26 @@ function TodosPage() {
       alert(error.message || "Failed to delete todo");
     },
   });
+
+  // Delete todo mutation using TanStack Query
+  // const editTodoMutation = useMutation({
+  //   mutationFn: async (id: string) => {
+  //     const res = await fetch(`/api/user?id=${id}`, {
+  //       method: "EDIT",
+  //     });
+  //     const data = await res.json();
+  //     if (!res.ok) {
+  //       throw new Error(data.error || "Failed to edit todo");
+  //     }
+  //     return data;
+  //   },
+  //   onSuccess: () => {
+  //     refetchTodos();
+  //   },
+  //   onError: (error: any) => {
+  //     alert(error.message || "Failed to delete todo");
+  //   },
+  // });
 
   if (userLoading || (user && todosLoading)) {
     return (
@@ -151,6 +176,10 @@ function TodosPage() {
                         <button
                           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                           title="Edit todo"
+                          onClick={() => {
+                            setSelectedTodo(todo);
+                            setIsEditOpen(true);
+                          }}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -194,6 +223,47 @@ function TodosPage() {
             </tbody>
           </table>
         </div>
+
+        {/* ================= EDIT MODAL ================= */}
+        {isEditOpen && selectedTodo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
+              <h2 className="mb-4 text-xl font-semibold">Edit Todo</h2>
+
+              <input
+                type="text"
+                defaultValue={selectedTodo.title}
+                className="mb-3 w-full rounded-md border px-3 py-2"
+              />
+
+              <textarea
+                defaultValue={selectedTodo.description}
+                className="mb-3 w-full rounded-md border px-3 py-2"
+              />
+
+              <select
+                defaultValue={selectedTodo.status}
+                className="mb-4 w-full rounded-md border px-3 py-2"
+              >
+                <option value="draft">Draft</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setIsEditOpen(false)}
+                  className="rounded-md px-4 py-2 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
