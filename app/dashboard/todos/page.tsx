@@ -6,8 +6,8 @@ import React from "react";
 
 const statusColors: Record<string, string> = {
   draft: "bg-amber-100 text-amber-700",
-  "In Progress": "bg-blue-100 text-blue-700",
-  Completed: "bg-emerald-100 text-emerald-700",
+  "in-progress": "bg-blue-100 text-blue-700",
+  completed: "bg-emerald-100 text-emerald-700",
 };
 
 function TodosPage() {
@@ -16,6 +16,10 @@ function TodosPage() {
   // State for edit modal and selected todo
   const [isEditOpen, setIsEditOpen] = React.useState(false);
   const [selectedTodo, setSelectedTodo] = React.useState<any>(null);
+
+  const [editTitle, setEditTitle] = React.useState("");
+  const [editDescription, setEditDescription] = React.useState("");
+  const [editStatus, setEditStatus] = React.useState("draft");
 
   // Fetch current user
   const { data: user, isLoading: userLoading } = useQuery({
@@ -69,25 +73,36 @@ function TodosPage() {
     },
   });
 
-  // Delete todo mutation using TanStack Query
-  // const editTodoMutation = useMutation({
-  //   mutationFn: async (id: string) => {
-  //     const res = await fetch(`/api/user?id=${id}`, {
-  //       method: "EDIT",
-  //     });
-  //     const data = await res.json();
-  //     if (!res.ok) {
-  //       throw new Error(data.error || "Failed to edit todo");
-  //     }
-  //     return data;
-  //   },
-  //   onSuccess: () => {
-  //     refetchTodos();
-  //   },
-  //   onError: (error: any) => {
-  //     alert(error.message || "Failed to delete todo");
-  //   },
-  // });
+  // Edit todo mutation using TanStack Query
+  type EditTodoInput = {
+    id: string;
+    title: string;
+    description: string;
+    status: string;
+  };
+
+  const editTodoMutation = useMutation({
+    mutationFn: async ({ id, title, description, status }: EditTodoInput) => {
+      const res = await fetch(`/api/user?id=${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title, description, status }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to edit todo");
+      }
+      return data;
+    },
+    onSuccess: () => {
+      refetchTodos();
+    },
+    onError: (error: any) => {
+      alert(error.message || "Failed to delete todo");
+    },
+  });
 
   if (userLoading || (user && todosLoading)) {
     return (
@@ -178,6 +193,9 @@ function TodosPage() {
                           title="Edit todo"
                           onClick={() => {
                             setSelectedTodo(todo);
+                            setEditTitle(todo.title);
+                            setEditDescription(todo.description);
+                            setEditStatus(todo.status);
                             setIsEditOpen(true);
                           }}
                         >
@@ -232,22 +250,25 @@ function TodosPage() {
 
               <input
                 type="text"
-                defaultValue={selectedTodo.title}
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
                 className="mb-3 w-full rounded-md border px-3 py-2"
               />
 
               <textarea
-                defaultValue={selectedTodo.description}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
                 className="mb-3 w-full rounded-md border px-3 py-2"
               />
 
               <select
-                defaultValue={selectedTodo.status}
+                value={editStatus}
+                onChange={(e) => setEditStatus(e.target.value)}
                 className="mb-4 w-full rounded-md border px-3 py-2"
               >
                 <option value="draft">Draft</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
               </select>
 
               <div className="flex justify-end gap-3">
@@ -257,7 +278,24 @@ function TodosPage() {
                 >
                   Cancel
                 </button>
-                <button className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+                <button
+                  className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                  onClick={() => {
+                    console.log("Submitting edit:", {
+                      id: selectedTodo.id,
+                      title: editTitle,
+                      description: editDescription,
+                      status: editStatus,
+                    });
+                    editTodoMutation.mutate({
+                      id: selectedTodo.id,
+                      title: editTitle,
+                      description: editDescription,
+                      status: editStatus,
+                    });
+                    setIsEditOpen(false);
+                  }}
+                >
                   Save
                 </button>
               </div>
