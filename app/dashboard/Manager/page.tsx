@@ -5,36 +5,6 @@ import { table } from "console";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
-// const todos = [
-//   {
-//     id: 1,
-//     user: "Achinth Mihiran",
-//     title: "Set up project",
-//     description: "Initialize repo and configs",
-//     status: "In Progress",
-//   },
-//   {
-//     id: 2,
-//     user: "Achinth Mihiran",
-//     title: "Design UI",
-//     description: "Create wireframes for dashboard",
-//     status: "draft",
-//   },
-//   {
-//     id: 3,
-//     user: " Nimal Perera",
-//     title: "Build auth",
-//     description: "Implement login/register flow",
-//     status: "Completed",
-//   },
-//   {
-//     id: 4,
-//     user: "Saman Kumara",
-//     title: "API integration",
-//     description: "Connect to backend services",
-//     status: "draft",
-//   },
-// ];
 
 const statusColors: Record<string, string> = {
   draft: "bg-amber-100 text-amber-700",
